@@ -27,18 +27,23 @@ var processGames = function(games, callback) {
   async.each(games, processGame, callback);
 };
 
-// gameday.getGames(2008, 4, 6, function(err, games) {
-//   games = games.filter(g => g.away == "sea" || g.home == "sea");
-//   if (!games.length) return console.log("No SEA games for that day");
+var months = [];
+for (var y = 2008; y < 2016; y++) {
+  for (var m = 1; m < 13; m++) {
+    months.push({ year: y, month: m });
+  }
+}
 
-//   processGames(games, () => db.close());
-// });
-
-var months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-
-async.map(months, gameday.getDays.bind(null, 2008), function(err, result) {
-  result.forEach(function(days, i) {
-    console.log(months[i], days);
+async.each(months, function(m, done) {
+  gameday.getDays(m.year, m.month, function(err, days) {
+    if (err) return done(err);
+    async.each(days, function(day, next) {
+      gameday.getGames(m.year, m.month, day, function(err, games) {
+        processGames(games, next);
+      });
+    }, done);
   });
+}, function(err) {
+  if (err) console.log(err);
   db.close();
 });
