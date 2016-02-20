@@ -9,6 +9,7 @@ var getDays = function(year, month, callback) {
   var url = `${baseURL}/year_${year}/month_${m}/`;
   request(url, function(err, response, body) {
     if (err) return callback(err);
+    if (response.statusCode >= 300) return callback(null, []);
     var $ = cheerio.load(body);
     var days = $(`a[href^=day]`).toArray().map(d => d.attribs.href.replace(/day_|\/$/g, ""));
     callback(null, days);
@@ -23,6 +24,7 @@ var getGames = function(year, month, day, callback) {
   var url = `${baseURL}/year_${year}/month_${m}/day_${d}/`;
   request(url, function(err, response, body) {
     if (err) return callback(err);
+    if (response.statusCode >= 300) return callback(null, []);
     var $ = cheerio.load(body);
     var games = $(`a[href^="gid"]`).toArray().map(function(link) {
       var matched = link.attribs.href.match(/gid_\d{4}_\d{2}_\d{2}_(\w{3})mlb_(\w{3})mlb/);
@@ -46,6 +48,7 @@ var getGameDetail = function(game, callback) {
 var url = makeGameURL(game) + "/game.xml";
   request(url, function(err, response, body) {
     if (err) return callback(err);
+    if (response.statusCode >= 300) return callback({ statusCode: response.statusCode });
     var $ = cheerio.load(body);
     var teams = $("team").toArray().forEach(function(t) {
       var team = {
@@ -65,6 +68,7 @@ var getPlayers = function(game, callback) {
   var url = makeGameURL(game) + "/players.xml";
   request(url, function(err, response, body) {
     if (err) return callback(err);
+    if (response.statusCode >= 300) return callback(null, []);
     var $ = cheerio.load(body);
     var players = $("player").toArray().map(function(p) {
       return {
@@ -84,6 +88,7 @@ var getPitches = function(game, callback) {
   var url = makeGameURL(game) + "/inning/inning_all.xml";
   request(url, function(err, response, body) {
     if (err) return callback(err);
+    if (response.statusCode >= 300) return callback(null, []);
     var $ = cheerio.load(body);
     var innings = $("inning").toArray();
     var plays = [];

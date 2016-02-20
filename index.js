@@ -19,6 +19,7 @@ var processPlayers = function(game, callback) {
 var processPitches = function(game, callback) {
   console.log(`      Getting pitches`)
   gameday.getPitches(game, function(err, pitches) {
+    if (err) return callback();
     async.each(pitches, db.addPitch, callback);
   });
 }
@@ -28,6 +29,7 @@ var processGame = function(game, callback) {
   console.log(`    Pulling game: ${gameString}`);
   if (game.away == "tba" || game.home == "tba") return callback();
   gameday.getGameDetail(game, function(err, game) {
+    if (err && err.statusCode != 404) return callback(); //skip games with no detail
     async.parallel([
       c => db.addGame(game, c),
       c => processPlayers(game, c),
