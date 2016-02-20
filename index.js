@@ -4,6 +4,7 @@ var gameday = require("./gameday");
 var db = require("./database");
 
 var processPlayers = function(game, callback) {
+  console.log(`      Getting players`);
   gameday.getPlayers(game, function(err, players) {
     if (err) return callback(err);
     async.each(players, function(player, playerDone) {
@@ -16,22 +17,22 @@ var processPlayers = function(game, callback) {
 };
 
 var processPitches = function(game, callback) {
+  console.log(`      Getting pitches`)
   gameday.getPitches(game, function(err, pitches) {
     async.each(pitches, db.addPitch, callback);
   });
 }
 
 var processGame = function(game, callback) {
+  var gameString = `${game.away.toUpperCase()} vs ${game.home.toUpperCase()}`;
+  console.log(`    Pulling game: ${gameString}`);
+  if (game.away == "tba" || game.home == "tba") return callback();
   gameday.getGameDetail(game, function(err, game) {
-    var gameString = `${game.away.toUpperCase()} vs ${game.home.toUpperCase()}`;
-    console.log(`    Pulling game: ${gameString}`);
-    db.addGame(game, function() {
-      console.log(`      Getting players`);
-      processPlayers(game, function() {
-        console.log(`      Getting pitches`)
-        processPitches(game, callback);
-      });
-    });
+    async.parallel([
+      c => db.addGame(game, c),
+      c => processPlayers(game, c),
+      c => processPitches(game, c)
+    ], callback);
   });
 }
 
