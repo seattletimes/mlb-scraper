@@ -96,11 +96,13 @@ var getPitches = function(game, callback) {
             id: pitch.attribs.sv_id,
             game: game.id,
             inning: parseInt(inning.attribs.num, 10),
+            batter: atBat.attribs.batter,
             at_bat: parseInt(atBat.attribs.num, 10),
+            pitcher: atBat.attribs.pitcher,
             designation: pitch.attribs.des,
             pitch_type: pitch.attribs.pitch_type
           };
-          var numerics = "x y start_speed end_speed pfx_x pfx_y pfx_z px pz x0 y0 z0 vx0 vy0 vz0 ax ay az break_y break_angle pitch_confidence zone spin_dir spin_rate";
+          var numerics = "x y start_speed end_speed pfx_x pfx_y pfx_z px pz x0 y0 z0 vx0 vy0 vz0 ax ay az break_y break_angle break_length pitch_confidence zone spin_dir spin_rate";
           numerics = numerics.split(" ");
           numerics.forEach(n => data[n] = parseFloat(pitch.attribs[n]));
           plays.push(data);

@@ -33,7 +33,9 @@ var addGame = function(game, callback) {
       }
     }
     //add the teams if the game was successful
-    async.each([game.home_team, game.away_team], (t, c) => addTeam(t, c), callback);
+    async.each([game.home_team, game.away_team], function(t, c) {
+      if (t) addTeam(t, c);
+    }, callback);
   });
 };
 
@@ -51,8 +53,84 @@ var addTeam = function(team, callback) {
   });
 };
 
-var addPitch = function(game, pitch, callback) {
-
+var addPitch = function(pitch, callback) {
+  var query = SQL`
+    INSERT INTO pitches (
+      id,
+      game,
+      inning,
+      at_bat,
+      designation,
+      batter,
+      pitcher,
+      x,
+      y,
+      start_speed,
+      end_speed,
+      pfx_x,
+      pfx_y,
+      pfx_z,
+      px,
+      pz,
+      x0,
+      y0,
+      z0,
+      vx0,
+      vy0,
+      vz0,
+      ax,
+      ay,
+      az,
+      break_y,
+      break_angle,
+      break_length,
+      pitch_type,
+      pitch_confidence,
+      zone,
+      spin_dir,
+      spin_rate
+    ) VALUES (
+      ${pitch.id},
+      ${pitch.game},
+      ${pitch.inning},
+      ${pitch.at_bat},
+      ${pitch.designation},
+      ${pitch.batter},
+      ${pitch.pitcher},
+      ${pitch.x},
+      ${pitch.y},
+      ${pitch.start_speed},
+      ${pitch.end_speed},
+      ${pitch.pfx_x},
+      ${pitch.pfx_y},
+      ${pitch.pfx_z},
+      ${pitch.px},
+      ${pitch.pz},
+      ${pitch.x0},
+      ${pitch.y0},
+      ${pitch.z0},
+      ${pitch.vx0},
+      ${pitch.vy0},
+      ${pitch.vz0},
+      ${pitch.ax},
+      ${pitch.ay},
+      ${pitch.az},
+      ${pitch.break_y},
+      ${pitch.break_angle},
+      ${pitch.break_length},
+      ${pitch.pitch_type},
+      ${pitch.pitch_confidence},
+      ${pitch.zone},
+      ${pitch.spin_dir},
+      ${pitch.spin_rate}
+    )`;
+  database.query(query, function(err) {
+    if (err && err.detail.match(/already exists/)) {
+      log(`Ignoring pitch: ${pitch.id}`);
+      return callback();
+    }
+    callback(err);
+  })
 };
 
 var addPlayer = function(player, callback) {

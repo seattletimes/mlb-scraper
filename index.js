@@ -15,21 +15,33 @@ var processPlayers = function(game, callback) {
   });
 };
 
+var processPitches = function(game, callback) {
+  gameday.getPitches(game, function(err, pitches) {
+    async.each(pitches, db.addPitch, callback);
+  });
+}
+
 var processGame = function(game, callback) {
   gameday.getGameDetail(game, function(err, game) {
+    var gameString = `${game.away.toUpperCase()} vs ${game.home.toUpperCase()}`;
+    console.log(`    Pulling game: ${gameString}`);
     db.addGame(game, function() {
-      processPlayers(game, callback);
+      console.log(`      Getting players`);
+      processPlayers(game, function() {
+        console.log(`      Getting pitches`)
+        processPitches(game, callback);
+      });
     });
   });
 }
 
 var processGames = function(games, callback) {
-  async.each(games, processGame, callback);
+  async.eachSeries(games, processGame, callback);
 };
 
 var months = [];
-for (var y = 2008; y < 2016; y++) {
-  for (var m = 1; m < 13; m++) {
+for (var y = 2008; y < 2009; y++) {
+  for (var m = 4; m < 5; m++) {
     months.push({ year: y, month: m });
   }
 }
@@ -37,8 +49,10 @@ for (var y = 2008; y < 2016; y++) {
 async.each(months, function(m, done) {
   gameday.getDays(m.year, m.month, function(err, days) {
     if (err) return done(err);
-    async.each(days, function(day, next) {
+    async.eachSeries(days, function(day, next) {
+      console.log(`Requesting data for ${m.year}-${m.month}-${day}`);
       gameday.getGames(m.year, m.month, day, function(err, games) {
+        console.log(`  Processing ${m.year}-${m.month}-${day} - ${games.length} games`);
         processGames(games, next);
       });
     }, done);
