@@ -29,7 +29,7 @@ var processGame = function(game, callback) {
   console.log(`    Pulling game: ${gameString}`);
   if (game.away == "tba" || game.home == "tba") return callback();
   gameday.getGameDetail(game, function(err, game) {
-    if (err && err.statusCode != 404) return callback(); //skip games with no detail
+    if (err) return callback(); //skip games with no details, it's cool
     async.parallel([
       c => db.addGame(game, c),
       c => processPlayers(game, c),
