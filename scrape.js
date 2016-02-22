@@ -72,17 +72,21 @@ for (var y = 2008; y < 2016; y++) {
 }
 
 var scrape = function(callback) {
+
   async.eachSeries(months, function(m, done) {
     gameday.getDays(m.year, m.month, function(err, days) {
       if (err) return done(err);
-      async.eachLimit(days, 3, function(day, next) {
+      async.eachSeries(days, function(day, next) {
         // facade.emit("update", { month: m.month, year: m.year, day: day });
         console.log(`Requesting data for ${m.year}-${m.month}-${day}`);
         gameday.getGames(m.year, m.month, day, function(err, games) {
           facade.emit("update", { year: m.year, month: m.month, day, games, type: "list-games" });
           console.log(`  Processing ${m.year}-${m.month}-${day} - ${games.length} games`);
           if (!games.length) return next();
-          processGames(games, next);
+          processGames(games, function() {
+            facade.emit("update", { year: m.year, month: m.month, day, games, type: "finished-day" });
+            next();
+          });
         });
       }, done);
     });

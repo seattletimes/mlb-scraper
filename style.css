@@ -18,10 +18,26 @@ label {
   font-style: italic;
 }
 
-.years li, .months li, .days li {
+.days li {
   display: block;
   border: 1px solid #EEE;
   padding: 4px;
+}
+
+.day.finished {
+  background: #EFE;
+}
+
+.day.finished .game {
+  background: transparent;
+}
+
+.day.finished h2 {
+  font-size: 10px;
+}
+
+.day.finished .status {
+  display: none;
 }
 
 .game {

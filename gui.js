@@ -12,6 +12,7 @@ var makeDay = function(data) {
   if (data.games) {
     label += ` - ${data.games.length} games`;
   }
+  day.className = "day";
   day.innerHTML = `<label>${label}</label>`;
   day.setAttribute("timestamp", new Date(data.year, parseInt(data.month, 10) - 1, parseInt(data.day, 10)).getTime());
   days.appendChild(day);
@@ -40,7 +41,11 @@ var getGameElement = function(game) {
 
 ipc.on("update", function(sender, e) {
   if (e.games && e.games.length) {
-    makeDay(e);
+    if (e.type == "finished-day") {
+      var day = days.querySelector(`[day="${getDayID(e)}"]`);
+      if (!day) return;
+      day.classList.add("finished");
+    } else makeDay(e);
   }
   if (e.game) {
     var element = getGameElement(e.game);
@@ -52,4 +57,4 @@ window.addEventListener("keydown", function(e) {
   if (e.keyCode == 192) {
     require("remote").getCurrentWindow().webContents.openDevTools();
   }
-})
+});
