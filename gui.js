@@ -28,17 +28,17 @@ var getGameElement = function(game) {
   gameElement.setAttribute("game", game.id);
   gameElement.className = "game";
   gameElement.innerHTML = `
-  <h2>${game.away.toUpperCase()} vs. ${game.home.toUpperCase()}</h2>
-  <span class="metadata status">game</span>
-  <span class="players status">players</span>
-  <span class="pitches status">pitches</span>
+<h2>${game.away.toUpperCase()} vs. ${game.home.toUpperCase()}</h2>
+<span class="metadata status">game</span>
+<span class="players status">players</span>
+<span class="pitches status">pitches</span>
   `;
   day.appendChild(gameElement);
   return gameElement;
 };
 
 ipc.on("update", function(sender, e) {
-  if (e.games) {
+  if (e.games && e.games.length) {
     makeDay(e);
   }
   if (e.game) {

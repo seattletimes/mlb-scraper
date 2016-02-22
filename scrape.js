@@ -42,7 +42,11 @@ var processGame = function(game, callback) {
   if (game.away == "tba" || game.home == "tba") return callback();
   facade.emit("update", { game, type: "process-game" });
   gameday.getGameDetail(game, function(err, game) {
-    if (err) return callback(); //skip games with no details, it's cool
+    if (err) {
+      //some games have no stats
+      if (err.statusCode) facade.emit("update", { game, type: "no-game-details" });
+      return callback();
+    }
     facade.emit("update", { game, type: "game-details" });
     async.parallel([
       c => db.addGame(game, c),
@@ -60,14 +64,14 @@ var processGames = function(games, callback) {
 };
 
 var months = [];
-for (var y = 2008; y < 2009; y++) {
-  for (var m = 4; m < 5; m++) {
+for (var y = 2008; y < 2016; y++) {
+  for (var m = 1; m < 13; m++) {
     months.push({ year: y, month: m });
   }
 }
 
 var scrape = function(callback) {
-  async.each(months, function(m, done) {
+  async.eachSeries(months, function(m, done) {
     gameday.getDays(m.year, m.month, function(err, days) {
       if (err) return done(err);
       async.eachLimit(days, 3, function(day, next) {

@@ -44,6 +44,14 @@ label {
   color: white;
 }
 
+.game.no-game-details {
+  color: #888;
+}
+
+.game.no-game-details .status {
+  background: #777;
+}
+
 .game.process-game .metadata,
 .game.process-players .players,
 .game.process-pitches .pitches {

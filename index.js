@@ -11,7 +11,7 @@ if (process.versions.electron) {
     window = new Window({ width: 800, height: 600 });
     window.loadURL(`file://${__dirname}/index.html`);
     window.show();
-    window.webContents.openDevTools();
+    if (process.argv.some(arg => arg.match(/--debug/))) window.webContents.openDevTools();
 
     scraper.on("update", e => window.webContents.send("update", e));
 
@@ -21,6 +21,6 @@ if (process.versions.electron) {
   });
 
 } else {
-  scraper.on("update", e => console.log(e.type, e.game ? e.game.id : e.games.length + " games"));
+  scraper.on("update", e => console.log(e));
   scraper.scrape();
 }

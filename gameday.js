@@ -37,7 +37,7 @@ var getGames = function(year, month, day, callback) {
         home: matched[2],
         id: year + m + d + matched[1] + matched[2]
       }
-    });
+    }).filter(g => g);
     callback(null, games);
   });
 };
