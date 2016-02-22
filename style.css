@@ -1,0 +1,63 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: sans-serif;
+  font-size: 12px;
+}
+
+ul {
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+}
+
+label {
+  display: block;
+  font-style: italic;
+}
+
+.years li, .months li, .days li {
+  display: block;
+  border: 1px solid #EEE;
+  padding: 4px;
+}
+
+.game {
+  padding: 10px;
+  background: #EEE;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.game h2 {
+  font-size: 16px;
+  margin: 0;
+  display: block;
+}
+
+.status {
+  display: inline-block;
+  padding: 4px 8px;
+  background: #333;
+  color: white;
+}
+
+.game.process-game .metadata,
+.game.process-players .players,
+.game.process-pitches .pitches {
+  background: #999;
+}
+
+.game.game-details .metadata,
+.game.save-players .players,
+.game.save-pitches .pitches {
+  background: #660;
+}
+
+.game.finished-game .metadata,
+.game.finished-players .players,
+.game.finished-pitches .pitches {
+  background: #060;
+}
