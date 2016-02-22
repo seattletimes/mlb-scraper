@@ -8,7 +8,11 @@ if (process.versions.electron) {
   var ipc = electron.ipcMain;
 
   app.on("ready", function() {
-    window = new Window({ width: 800, height: 600 });
+    window = new Window({
+      width: 1024,
+      height: 800,
+      title: "Bases Loaded"
+    });
     window.loadURL(`file://${__dirname}/index.html`);
     window.show();
     if (process.argv.some(arg => arg.match(/--debug/))) window.webContents.openDevTools();

@@ -13,6 +13,7 @@ var makeDay = function(data) {
     label += ` - ${data.games.length} games`;
   }
   day.innerHTML = `<label>${label}</label>`;
+  day.setAttribute("timestamp", new Date(data.year, parseInt(data.month, 10) - 1, parseInt(data.day, 10)).getTime());
   days.appendChild(day);
   return day;
 };
@@ -46,3 +47,9 @@ ipc.on("update", function(sender, e) {
     element.classList.add(e.type);
   }
 });
+
+window.addEventListener("keydown", function(e) {
+  if (e.keyCode == 192) {
+    require("remote").getCurrentWindow().webContents.openDevTools();
+  }
+})

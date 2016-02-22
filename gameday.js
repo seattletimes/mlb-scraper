@@ -27,7 +27,7 @@ var getGames = function(year, month, day, callback) {
     if (response.statusCode >= 300) return callback(null, []);
     var $ = cheerio.load(body);
     var games = $(`a[href^="gid"]`).toArray().map(function(link) {
-      var matched = link.attribs.href.match(/gid_\d{4}_\d{2}_\d{2}_(\w{3})mlb_(\w{3})mlb/);
+      var matched = link.attribs.href.match(/gid_\d{4}_\d{2}_\d{2}_(\w{3})mlb_(\w{3})mlb_(\d+)/);
       if (matched) return {
         year: year, 
         month: m,
@@ -35,14 +35,17 @@ var getGames = function(year, month, day, callback) {
         date: new Date(year, month - 1, day),
         away: matched[1],
         home: matched[2],
-        id: year + m + d + matched[1] + matched[2]
+        num: matched[3],
+        id: year + m + d + matched[1] + matched[2] + matched[3]
       }
     }).filter(g => g);
     callback(null, games);
   });
 };
 
-var makeGameURL = game => `${baseURL}/year_${game.year}/month_${game.month}/day_${game.day}/gid_${game.year}_${game.month}_${game.day}_${game.away}mlb_${game.home}mlb_1`;
+var makeGameURL = function(game) {
+  return `${baseURL}/year_${game.year}/month_${game.month}/day_${game.day}/gid_${game.year}_${game.month}_${game.day}_${game.away}mlb_${game.home}mlb_${game.num}`;
+};
 
 var getGameDetail = function(game, callback) {
 var url = makeGameURL(game) + "/game.xml";
@@ -84,6 +87,9 @@ var getPlayers = function(game, callback) {
   });
 };
 
+var numerics = "x y start_speed end_speed pfx_x pfx_y pfx_z px pz x0 y0 z0 vx0 vy0 vz0 ax ay az break_y break_angle break_length pitch_confidence zone spin_dir spin_rate";
+numerics = numerics.split(" ");
+
 var getPitches = function(game, callback) {
   var url = makeGameURL(game) + "/inning/inning_all.xml";
   request(url, function(err, response, body) {
@@ -107,8 +113,6 @@ var getPitches = function(game, callback) {
             designation: pitch.attribs.des,
             pitch_type: pitch.attribs.pitch_type
           };
-          var numerics = "x y start_speed end_speed pfx_x pfx_y pfx_z px pz x0 y0 z0 vx0 vy0 vz0 ax ay az break_y break_angle break_length pitch_confidence zone spin_dir spin_rate";
-          numerics = numerics.split(" ");
           numerics.forEach(n => data[n] = parseFloat(pitch.attribs[n]));
           plays.push(data);
         });

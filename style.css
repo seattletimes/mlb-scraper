@@ -26,7 +26,8 @@ label {
 
 .game {
   padding: 10px;
-  background: #EEE;
+  background: #F8F8F8;
+  color: #666;
   display: inline-block;
   vertical-align: top;
 }
@@ -45,7 +46,11 @@ label {
 }
 
 .game.no-game-details {
-  color: #888;
+  color: #DDD;
+}
+
+.game.no-game-details .status {
+  background: #DDD;
 }
 
 .game.no-game-details .status {
@@ -68,4 +73,9 @@ label {
 .game.finished-players .players,
 .game.finished-pitches .pitches {
   background: #060;
+}
+
+.game.finished-game {
+  color: black;
+  background: white;
 }

@@ -36,15 +36,16 @@ var processPitches = function(game, callback) {
   });
 }
 
-var processGame = function(game, callback) {
+var processGame = function(original, callback) {
   // var gameString = `${game.away.toUpperCase()} vs ${game.home.toUpperCase()}`;
   // console.log(`    Pulling game: ${gameString}`);
-  if (game.away == "tba" || game.home == "tba") return callback();
-  facade.emit("update", { game, type: "process-game" });
-  gameday.getGameDetail(game, function(err, game) {
+  if (original.away == "tba" || original.home == "tba") return callback();
+  facade.emit("update", { original, type: "process-game" });
+  gameday.getGameDetail(original, function(err, game) {
     if (err) {
       //some games have no stats
-      if (err.statusCode) facade.emit("update", { game, type: "no-game-details" });
+      if (err.statusCode) facade.emit("update", { game: original, type: "no-game-details" });
+      console.log("No game details", original.id);
       return callback();
     }
     facade.emit("update", { game, type: "game-details" });
@@ -80,6 +81,7 @@ var scrape = function(callback) {
         gameday.getGames(m.year, m.month, day, function(err, games) {
           facade.emit("update", { year: m.year, month: m.month, day, games, type: "list-games" });
           console.log(`  Processing ${m.year}-${m.month}-${day} - ${games.length} games`);
+          if (!games.length) return next();
           processGames(games, next);
         });
       }, done);
