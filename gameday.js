@@ -122,4 +122,4 @@ var getPitches = function(game, callback) {
   });
 }
 
-module.exports = { getDays, getGames, getGameDetail, getPlayers, getPitches }
+module.exports = { getDays, getGames, getGameDetail, getPlayers, getPitches, makeGameURL }
