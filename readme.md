@@ -61,8 +61,7 @@ CREATE TABLE pitches
   pitch_confidence numeric,
   zone numeric,
   spin_dir numeric,
-  spin_rate numeric,
-  CONSTRAINT pitches_id_key UNIQUE (id)
+  spin_rate numeric
 );
 
 CREATE TABLE players
