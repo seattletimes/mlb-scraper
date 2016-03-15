@@ -26,6 +26,10 @@ for (var i = 0; i < 20; i++) {
       gameday.getGames(year, month, day, function(err, games) {
         if (err) return callback(err);
         var game = games[Math.floor(Math.random() * games.length)];
+        if (!game) {
+          console.log("  Game was undefined, which is weird and shouldn't be possible.");
+          return callback();
+        }
         if (game.home == 'tba' || game.away == 'tba') {
           console.log("  Game is TBA, skipping")
           return callback();
