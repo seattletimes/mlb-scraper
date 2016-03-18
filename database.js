@@ -21,8 +21,8 @@ var SQL = function(parts) {
 
 var addGame = function(game, callback) {
   var query = SQL`
-    INSERT INTO games (id, date, venue, home_team, away_team)
-      VALUES (${game.id}, ${game.date}, ${game.venue}, ${game.home}, ${game.away})`;
+    INSERT INTO games (id, date, venue, home_team, away_team, home_score, away_score)
+      VALUES (${game.id}, ${game.date}, ${game.venue}, ${game.home}, ${game.away}, ${game.home_score}, ${game.away_score})`;
 
   database.query(query, function(err) {
     if (err) {

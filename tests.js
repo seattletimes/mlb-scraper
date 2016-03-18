@@ -42,8 +42,12 @@ for (var i = 0; i < 20; i++) {
           var pitches = $("pitch").toArray().map(function(p) {
             return {
               id: p.attribs.sv_id,
+              pitch_type: p.attribs.pitch_type,
               pfx_x: parseFloat(p.attribs.pfx_x),
-              end_speed: parseFloat(p.attribs.end_speed)
+              start_speed: parseFloat(p.attribs.start_speed),
+              end_speed: parseFloat(p.attribs.end_speed),
+              batter: p.attribs.batter,
+              pitcher: p.attribs.pitcher
             };
           }).filter(p => p.id);
           console.log(`    Checking ${pitches.length} pitches`);
@@ -52,13 +56,11 @@ for (var i = 0; i < 20; i++) {
               if (err) return c(`Missing pitch: ${pitch.id}`);
               if (result.rows.length == 0) return c(`No pitch found for ${pitch.id}`);
               var p = result.rows.pop();
-              if (p.pfx_x != pitch.pfx_x) {
-                console.log(`    Expected pfx_x of ${pitch.pfx_x}, found ${p.pfx_x}`);
-                return c(`Data didn't match on pitch ${pitch.id}`);
-              }
-              if (p.end_speed != pitch.end_speed) {
-                console.log(`    Expected end_speed of ${pitch.end_speed}, found ${p.end_speed}`);
-                return c(`Data didn't match on pitch ${pitch.id}`);
+              for (var key in pitch) {
+                if (key == "id") continue;
+                if (pitch[key] != p[key]) {
+                  return c(`    Mismatched value for ${key} on pitch ${pitch.id}`);
+                }
               }
               c();
             })

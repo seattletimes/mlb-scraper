@@ -1,5 +1,6 @@
 var request = require("request");
 var cheerio = require("cheerio");
+var async = require("async");
 
 var baseURL = "http://gd2.mlb.com/components/game/mlb";
 
@@ -48,12 +49,24 @@ var makeGameURL = function(game) {
 };
 
 var getGameDetail = function(game, callback) {
-var url = makeGameURL(game) + "/game.xml";
-  request(url, function(err, response, body) {
+  var url = makeGameURL(game) + "/game.xml";
+  var scoreURL = makeGameURL(game) + "/boxscore.xml";
+  async.parallel({
+    game: (c) => request(url, c),
+    scores: (c) => request(scoreURL, c)
+  }, function(err, results) {
     if (err) return callback(err);
-    if (response.statusCode >= 300) return callback({ statusCode: response.statusCode });
-    var $ = cheerio.load(body);
-    var teams = $("team").toArray().forEach(function(t) {
+    var gameResponse = results.game[0];
+    var gameBody = results.game[1];
+    var scoreResponse = results.scores[0];
+    var scoreBody = results.scores[1];
+    if (gameResponse.statusCode >= 300) return callback({ statusCode: gameResponse.statusCode });
+    var $game = cheerio.load(gameBody);
+    var $score = cheerio.load(scoreBody);
+    var score = $score("linescore").toArray().shift().attribs;
+    game.away_score = score.away_team_runs * 1;
+    game.home_score = score.home_team_runs * 1;
+    var teams = $game("team").toArray().forEach(function(t) {
       var team = {
         id: t.attribs.id,
         abbreviation: t.attribs.code,
@@ -62,7 +75,7 @@ var url = makeGameURL(game) + "/game.xml";
       //assign to home or away
       game[t.attribs.type + "_team"] = team;
     });
-    game.venue = $("stadium").attr("name");
+    game.venue = $game("stadium").attr("name");
     callback(null, game);
   });
 };
@@ -87,7 +100,7 @@ var getPlayers = function(game, callback) {
   });
 };
 
-var numerics = "x y start_speed end_speed pfx_x pfx_y pfx_z px pz x0 y0 z0 vx0 vy0 vz0 ax ay az break_y break_angle break_length pitch_confidence zone spin_dir spin_rate";
+var numerics = "x y start_speed end_speed pfx_x pfx_z px pz x0 y0 z0 vx0 vy0 vz0 ax ay az break_y break_angle break_length type_confidence zone spin_dir spin_rate";
 numerics = numerics.split(" ");
 
 var getPitches = function(game, callback) {
