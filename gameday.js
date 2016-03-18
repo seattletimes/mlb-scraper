@@ -63,9 +63,11 @@ var getGameDetail = function(game, callback) {
     if (gameResponse.statusCode >= 300) return callback({ statusCode: gameResponse.statusCode });
     var $game = cheerio.load(gameBody);
     var $score = cheerio.load(scoreBody);
-    var score = $score("linescore").toArray().shift().attribs;
-    game.away_score = score.away_team_runs * 1;
-    game.home_score = score.home_team_runs * 1;
+    var score = $score("linescore").toArray().shift();
+    if (score) {
+      game.away_score = score.attribs.away_team_runs * 1;
+      game.home_score = score.attribs.home_team_runs * 1;
+    }
     var teams = $game("team").toArray().forEach(function(t) {
       var team = {
         id: t.attribs.id,
