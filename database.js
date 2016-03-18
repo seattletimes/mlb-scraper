@@ -1,5 +1,6 @@
 var async = require("async");
 var pg = require("pg");
+pg.defaults.parseInt8 = true;
 var creds = require("./creds.json")
 var database = new pg.Client(creds);
 database.connect();
