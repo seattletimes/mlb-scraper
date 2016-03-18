@@ -103,11 +103,59 @@ var getPlayers = function(game, callback) {
 var numerics = "x y start_speed end_speed pfx_x pfx_z px pz x0 y0 z0 vx0 vy0 vz0 ax ay az break_y break_angle break_length type_confidence zone spin_dir spin_rate";
 numerics = numerics.split(" ");
 
+var processPitch = function(game, inning, atBat, pitch) {
+  var data = {
+    id: pitch.attribs.sv_id || pitch.attribs.id,
+    game: game.id,
+    inning: parseInt(inning.attribs.num, 10),
+    batter: atBat.attribs.batter,
+    at_bat: parseInt(atBat.attribs.num, 10),
+    pitcher: atBat.attribs.pitcher,
+    designation: pitch.attribs.des,
+    pitch_type: pitch.attribs.pitch_type
+  };
+  numerics.forEach(n => data[n] = parseFloat(pitch.attribs[n]));
+  return data;
+}
+
+var getPitchesExplicit = function(game, callback) {
+  var inningDir = makeGameURL(game) + "/inning/";
+  request(inningDir, function(err, dirResponse, dirBody) {
+    if (err) return callback(err);
+    //give up if there's no inning at all
+    if (dirResponse.statusCode >= 300) return callback(null, []);
+    //find all inning_X.xml files
+    var $dir = cheerio.load(dirBody);
+    var links = $dir("a").toArray().filter(el => el.attribs.href.match(/inning_\d+\.xml/)).map(el => el.attribs.href);
+    var plays = [];
+    async.each(links, function(link, c) {
+      var url = makeGameURL(game) + "/inning/" + link;
+      request(url, function(err, response, body) {
+        if (err) return c(err);
+        var $ = cheerio.load(body);
+        var inning = $("inning").toArray().shift();
+        var atBats = $("atbat").toArray();
+        atBats.forEach(function(atBat) {
+          var pitches = $(atBat).find("pitch").toArray();
+          pitches.forEach(function(pitch) {
+            var data = processPitch(game, inning, atBat, pitch);
+            plays.push(data);
+          });
+        });
+        c();
+      });
+    }, function(err) {
+      callback(err, plays);
+    });
+  });
+};
+
 var getPitches = function(game, callback) {
   var url = makeGameURL(game) + "/inning/inning_all.xml";
   request(url, function(err, response, body) {
     if (err) return callback(err);
-    if (response.statusCode >= 300) return callback(null, []);
+    //early games don't have inning_all, so scrape for them individually
+    if (response.statusCode >= 300) return getPitchesExplicit(game, callback);
     var $ = cheerio.load(body);
     var innings = $("inning").toArray();
     var plays = [];
@@ -116,17 +164,7 @@ var getPitches = function(game, callback) {
       atBats.forEach(function(atBat) {
         var pitches = $(atBat).find("pitch").toArray();
         pitches.forEach(function(pitch) {
-          var data = {
-            id: pitch.attribs.sv_id,
-            game: game.id,
-            inning: parseInt(inning.attribs.num, 10),
-            batter: atBat.attribs.batter,
-            at_bat: parseInt(atBat.attribs.num, 10),
-            pitcher: atBat.attribs.pitcher,
-            designation: pitch.attribs.des,
-            pitch_type: pitch.attribs.pitch_type
-          };
-          numerics.forEach(n => data[n] = parseFloat(pitch.attribs[n]));
+          var data = processPitch(game, inning, atBat, pitch);
           plays.push(data);
         });
       })
@@ -135,4 +173,4 @@ var getPitches = function(game, callback) {
   });
 }
 
-module.exports = { getDays, getGames, getGameDetail, getPlayers, getPitches, makeGameURL }
+module.exports = { getDays, getGames, getGameDetail, getPlayers, getPitches: getPitchesExplicit, makeGameURL }

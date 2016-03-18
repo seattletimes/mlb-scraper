@@ -119,7 +119,7 @@ var addPitch = function(pitch, callback) {
       ${pitch.break_angle},
       ${pitch.break_length},
       ${pitch.pitch_type},
-      ${pitch.pitch_confidence},
+      ${pitch.type_confidence},
       ${pitch.zone},
       ${pitch.spin_dir},
       ${pitch.spin_rate}
