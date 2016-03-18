@@ -70,7 +70,7 @@ var getGameDetail = function(game, callback) {
       var team = {
         id: t.attribs.id,
         abbreviation: t.attribs.code,
-        name: t.attribs.name_brief
+        name: t.attribs.name_brief || t.attribs.name
       };
       //assign to home or away
       game[t.attribs.type + "_team"] = team;
