@@ -1,4 +1,11 @@
 var scraper = require("./scrape");
+var dateGen = require("./dateGenerator");
+var minimist = require("minimist");
+var args = minimist(process.argv.slice(2));
+
+var startDate = args.start || "2-2008";
+startDate = startDate.split(/\/|-/);
+var months = [...dateGen.months(startDate[1], startDate[0], 2016, 1)];
 
 if (process.versions.electron) {
   var electron = require("electron");
@@ -20,11 +27,11 @@ if (process.versions.electron) {
     scraper.on("update", e => window.webContents.send("update", e));
 
     window.webContents.on("dom-ready", function() {
-      scraper.scrape();
+      scraper.scrape(months);
     });
   });
 
 } else {
   scraper.on("update", e => console.log(e));
-  scraper.scrape();
+  scraper.scrape(months);
 }

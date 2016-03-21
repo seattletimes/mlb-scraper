@@ -1,6 +1,5 @@
 var async = require("async");
 var EventEmitter = require("events");
-var minimist = require("minimist");
 var gameday = require("./gameday");
 var db = require("./database");
 
@@ -65,13 +64,9 @@ var processGames = function(games, callback) {
   async.eachLimit(games, 10, processGame, callback);
 };
 
-var args = minimist(process.argv.slice(2));
-var gen = require("./dateGenerator").months(args.year || 2008, args.month || 1, args.endYear || 2016, args.endMonth || 1);
-var months = [...gen];
+var scrape = function(months, callback) {
 
-var scrape = function(callback) {
-
-  async.eachSeries(months, function(m, done) {
+  async.eachSeries(function(m, done) {
     gameday.getDays(m.year, m.month, function(err, days) {
       if (err) return done(err);
       async.eachSeries(days, function(day, next) {
