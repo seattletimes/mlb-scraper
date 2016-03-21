@@ -150,7 +150,7 @@ var addPlayer = function(player, callback) {
 var addPosition = function(game, player, callback) {
   var query = SQL`
     INSERT INTO positions (player, position, team, num, game)
-      VALUES (${player.id}, ${player.position}, ${player.team}, ${player.num}, ${game.date})`;
+      VALUES (${player.id}, ${player.position}, ${player.team}, ${player.num}, ${game.id})`;
   var q = database.query(query, function(err) {
     callback(err)
   });

@@ -78,7 +78,7 @@ CREATE TABLE positions
   "position" text,
   team text,
   num text,
-  game date
+  game text
 );
 
 CREATE TABLE teams
