@@ -16,6 +16,49 @@ var results = {
   total: 0
 };
 
+var testPitches = function(body, callback) {
+  var $ = cheerio.load(body);
+  var pitches = [];
+  var atBats = $("atbat").toArray().forEach(function(atBat) {
+    var within = $(atBat).find("pitch").toArray().map(function(p) {
+      return {
+        id: p.attribs.sv_id || p.attribs.id,
+        pfx_x: parseFloat(p.attribs.pfx_x),
+        start_speed: parseFloat(p.attribs.start_speed),
+        end_speed: parseFloat(p.attribs.end_speed),
+        batter: atBat.attribs.batter,
+        pitcher: atBat.attribs.pitcher,
+        at_bat: parseFloat(atBat.attribs.num)
+      };
+    }).filter(p => p.id);
+    pitches.push.apply(pitches, within);
+  });
+  console.log(`    Checking ${pitches.length} pitches`);
+  async.eachSeries(pitches, function(pitch, c) {
+    database.query(
+      `SELECT * FROM pitches WHERE id = '${pitch.id}' AND game = '${game.id}' AND at_bat = ${pitch.at_bat}`,
+      function(err, result) {
+        if (err) return c(`Missing pitch: ${pitch.id}`);
+        if (result.rows.length == 0) return c(`No pitch found for ${pitch.id}`);
+        var p = result.rows.pop();
+        for (var key in pitch) {
+          if (key == "id") continue;
+          if (pitch[key] !== p[key] && (!isNaN(pitch[key]) && !isNaN(p[key]))) {
+            return c(`    Mismatched value for ${key} on pitch ${pitch.id} (${pitch[key]} vs ${p[key]})`);
+          }
+        }
+        c();
+      })
+  }, function(err) {
+    if (err) {
+      console.log(chalk.red(err));
+    } else {
+      console.log(chalk.green("Everything checked out!"));
+    }
+    callback(err);
+  });
+};
+
 //randomly test five games
 for (var i = 0; i < 20; i++) {
   var year = Math.round(Math.random() * 5) + 2008;
@@ -37,58 +80,15 @@ for (var i = 0; i < 20; i++) {
         }
         console.log(`  Game is ${game.home.toUpperCase()} vs ${game.away.toUpperCase()}`);
 
-        var testPitches = function(body) {
-          var $ = cheerio.load(body);
-          var pitches = [];
-          var atBats = $("atbat").toArray().forEach(function(atBat) {
-            var within = $(atBat).find("pitch").toArray().map(function(p) {
-              return {
-                id: p.attribs.sv_id || p.attribs.id,
-                pfx_x: parseFloat(p.attribs.pfx_x),
-                start_speed: parseFloat(p.attribs.start_speed),
-                end_speed: parseFloat(p.attribs.end_speed),
-                batter: atBat.attribs.batter,
-                pitcher: atBat.attribs.pitcher,
-                at_bat: parseFloat(atBat.attribs.num)
-              };
-            }).filter(p => p.id);
-            pitches.push.apply(pitches, within);
-          });
-          console.log(`    Checking ${pitches.length} pitches`);
-          async.eachSeries(pitches, function(pitch, c) {
-            database.query(
-              `SELECT * FROM pitches WHERE id = '${pitch.id}' AND game = '${game.id}' AND at_bat = ${pitch.at_bat}`,
-              function(err, result) {
-                if (err) return c(`Missing pitch: ${pitch.id}`);
-                if (result.rows.length == 0) return c(`No pitch found for ${pitch.id}`);
-                var p = result.rows.pop();
-                for (var key in pitch) {
-                  if (key == "id") continue;
-                  if (pitch[key] !== p[key] && (!isNaN(pitch[key]) && !isNaN(p[key]))) {
-                    return c(`    Mismatched value for ${key} on pitch ${pitch.id} (${pitch[key]} vs ${p[key]})`);
-                  }
-                }
-                c();
-              })
-          }, function(err) {
-            if (err) {
-              console.log(chalk.red(err));
-            } else {
-              console.log(chalk.green("Everything checked out!"));
-            }
-            callback(err);
-          });
-        };
-
         request(gameday.makeGameURL(game) + "/inning/inning_all.xml", function(err, response, body) {
           if (err) return callback(err);
           if (response.statusCode >= 400) {
             request(gameday.makeGameURL(game) + `/inning/inning_${Math.ceil(Math.random() * 7)}.xml`, function(err, response, body) {
               if (err) return callback(err);
-              testPitches(body);
+              testPitches(body, callback);
             });
           } else {
-            testPitches(body);
+            testPitches(body, callback);
           }
         });
       });
