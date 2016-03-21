@@ -4,7 +4,7 @@ var minimist = require("minimist");
 var args = minimist(process.argv.slice(2));
 
 var startDate = args.start || "2-2008";
-startDate = startDate.split(/\/|-/);
+startDate = startDate.split(/\/|-/).map(n => parseInt(n, 10));
 var months = [...dateGen.months(startDate[1], startDate[0], 2016, 1)];
 
 if (process.versions.electron) {

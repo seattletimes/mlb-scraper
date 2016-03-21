@@ -66,7 +66,7 @@ var processGames = function(games, callback) {
 
 var scrape = function(months, callback) {
 
-  async.eachSeries(function(m, done) {
+  async.eachSeries(months, function(m, done) {
     gameday.getDays(m.year, m.month, function(err, days) {
       if (err) return done(err);
       async.eachSeries(days, function(day, next) {
