@@ -16,7 +16,7 @@ var results = {
   total: 0
 };
 
-var testPitches = function(body, callback) {
+var testPitches = function(body, game, callback) {
   var $ = cheerio.load(body);
   var pitches = [];
   var atBats = $("atbat").toArray().forEach(function(atBat) {
@@ -34,7 +34,7 @@ var testPitches = function(body, callback) {
     pitches.push.apply(pitches, within);
   });
   console.log(`    Checking ${pitches.length} pitches`);
-  async.eachSeries(pitches, function(pitch, c) {
+  async.each(pitches, function(pitch, c) {
     database.query(
       `SELECT * FROM pitches WHERE id = '${pitch.id}' AND game = '${game.id}' AND at_bat = ${pitch.at_bat}`,
       function(err, result) {
@@ -85,10 +85,10 @@ for (var i = 0; i < 20; i++) {
           if (response.statusCode >= 400) {
             request(gameday.makeGameURL(game) + `/inning/inning_${Math.ceil(Math.random() * 7)}.xml`, function(err, response, body) {
               if (err) return callback(err);
-              testPitches(body, callback);
+              testPitches(body, game, callback);
             });
           } else {
-            testPitches(body, callback);
+            testPitches(body, game, callback);
           }
         });
       });
