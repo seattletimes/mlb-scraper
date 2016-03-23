@@ -26,7 +26,7 @@ var months = function*(year, month, endYear, endMonth) {
   endYear = endYear || now.getFullYear() + 1;
   endMonth = endMonth || now.getMonth() + 2;
   while (year < endYear) {
-    if (month < endMonth) return;
+    if (year == endYear && month > endMonth) return;
     yield { year, month };
     month++;
     if (month > 12) {
