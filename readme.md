@@ -103,7 +103,7 @@ CREATE TABLE runners
   rbi boolean
 );
 
-CREATE TABLE at_bats
+CREATE TABLE scoring_plays
 (
   game text,
   inning integer,

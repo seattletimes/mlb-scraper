@@ -158,7 +158,7 @@ var addPosition = function(game, player, callback) {
 
 var addAtBat = function(game, atBat, callback) {
   var query = SQL`
-    INSERT INTO at_bats (game, inning, at_bat, event, balls, strikes, outs, batter, pitcher, score)
+    INSERT INTO scoring_plays (game, inning, at_bat, event, balls, strikes, outs, batter, pitcher, score)
       VALUES (${game.id}, ${atBat.inning}, ${atBat.at_bat}, ${atBat.event}, ${atBat.balls}, ${atBat.strikes}, ${atBat.outs}, ${atBat.batter}, ${atBat.pitcher}, ${atBat.score})`;
   database.query(query, function(err) {
     if (err) return callback(err);
