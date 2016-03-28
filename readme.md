@@ -88,6 +88,34 @@ CREATE TABLE teams
   abbreviation text,
   CONSTRAINT teams_id_key UNIQUE (id)
 );
+
+CREATE TABLE runners
+(
+  game text,
+  inning integer,
+  at_bat integer,
+  runner text,
+  start_base text,
+  end_base text,
+  event text,
+  score boolean,
+  earned boolean,
+  rbi boolean
+);
+
+CREATE TABLE at_bats
+(
+  game text,
+  inning integer,
+  at_bat integer,
+  event text,
+  balls integer,
+  strikes integer,
+  outs integer,
+  batter text,
+  pitcher text,
+  score boolean
+);
 ```
 
 A player will have one position per game, which includes team information, in case they change positions or are traded. Pitches are associated with a game, and are effectively a merger of the `inning`, `atbat`, and `pitch` nodes in the original MLB XML files.

@@ -34,6 +34,7 @@ var getGameElement = function(game) {
 <span class="metadata status">game</span>
 <span class="players status">players</span>
 <span class="pitches status">pitches</span>
+<span class="atbats status">at-bats</span>
   `;
   day.appendChild(gameElement);
   return gameElement;

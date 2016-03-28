@@ -88,15 +88,20 @@ var getPlayers = function(game, callback) {
     if (err) return callback(err);
     if (response.statusCode >= 300) return callback(null, []);
     var $ = cheerio.load(body);
-    var players = $("player").toArray().map(function(p) {
-      return {
-        id: p.attribs.id,
-        first: p.attribs.first,
-        last: p.attribs.last,
-        position: p.attribs.current_position || p.attribs.position,
-        num: p.attribs.num,
-        team: p.attribs.team_abbrev
-      }
+    var teams = $("team").toArray();
+    var players = [];
+    teams.forEach(function(team) {
+      var extracted = $(team).find("player").toArray().map(function(p) {
+        return {
+          id: p.attribs.id,
+          first: p.attribs.first,
+          last: p.attribs.last,
+          position: p.attribs.current_position || p.attribs.position,
+          num: p.attribs.num,
+          team: team.attribs.id || p.attribs.team_abbrev
+        }
+      });
+      players.push.call(players, extracted);
     });
     callback(null, players);
   });
@@ -173,6 +178,56 @@ var getPitches = function(game, callback) {
     })
     callback(null, plays);
   });
-}
+};
 
-module.exports = { getDays, getGames, getGameDetail, getPlayers, getPitches: getPitchesExplicit, makeGameURL }
+var getScores = function(game, callback) {
+  var url = makeGameURL(game) + "/inning/inning_Scores.xml";
+  request(url, function(err, response, body) {
+    if (err) return callback(err);
+    if (response.statusCode >= 300) return callback(null, []);
+    var $ = cheerio.load(body);
+    var scores = $("score").toArray();
+    var results = [];
+    scores.forEach(function(score) {
+      var atBats = $(score).find("atbat").toArray();
+      atBats.forEach(function(atBat) {
+        var result = {
+          game: game.id,
+          inning: parseInt(score.attribs.inn, 10),
+          at_bat: parseInt(atBat.attribs.num, 10),
+          event: atBat.attribs.event,
+          score: atBat.attribs.score == "T",
+          balls: parseInt(atBat.attribs.b, 10),
+          strikes: parseInt(atBat.attribs.s, 10),
+          outs: parseInt(atBat.attribs.o, 10),
+          batter: atBat.attribs.batter,
+          pitcher: atBat.attribs.pitcher,
+          runners: []
+        };
+        var runners = $(atBat).find("runner").toArray();
+        result.runners = runners.map(function(runner) {
+          return {
+            runner: runner.attribs.id,
+            start_base: runner.attribs.start,
+            end_base: runner.attribs.end,
+            score: runner.attribs.score == "T",
+            earned: runner.attribs.earned == "T",
+            rbi: runner.attribs.rbi == "T"
+          };
+        });
+        results.push(result);
+      });
+    });
+    callback(null, results);
+  });
+};
+
+module.exports = {
+  getDays,
+  getGames,
+  getGameDetail,
+  getPlayers,
+  getPitches: getPitchesExplicit,
+  makeGameURL,
+  getScores
+};

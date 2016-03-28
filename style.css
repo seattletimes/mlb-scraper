@@ -75,19 +75,22 @@ label {
 
 .game.process-game .metadata,
 .game.process-players .players,
-.game.process-pitches .pitches {
+.game.process-pitches .pitches,
+.game.process-atbats .atbats {
   background: #999;
 }
 
 .game.game-details .metadata,
 .game.save-players .players,
-.game.save-pitches .pitches {
+.game.save-pitches .pitches,
+.game.save-atbats .atbats, {
   background: #660;
 }
 
 .game.finished-game .metadata,
 .game.finished-players .players,
-.game.finished-pitches .pitches {
+.game.finished-pitches .pitches,
+.game.finished-atbats .atbats {
   background: #060;
 }
 

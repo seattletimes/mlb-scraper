@@ -34,7 +34,20 @@ var processPitches = function(game, callback) {
       callback();
     });
   });
-}
+};
+
+var processAtBats = function(game, callback) {
+  facade.emit("update", { game, type: "process-atbats" });
+  gameday.getScores(game, function(err, atBats) {
+    facade.emit("update", { game, type: "save-atbats" });
+    if (err) return callback();
+    async.each(atBats, (a, c) => db.addAtBat(game, a, c), function(err) {
+      if (err) return callback();
+      facade.emit("update", { game, type: "finished-atbats" });
+      callback();
+    })
+  });
+};
 
 var processGame = function(original, callback) {
   // var gameString = `${game.away.toUpperCase()} vs ${game.home.toUpperCase()}`;
@@ -52,7 +65,8 @@ var processGame = function(original, callback) {
     async.parallel([
       c => db.addGame(game, c),
       c => processPlayers(game, c),
-      c => processPitches(game, c)
+      c => processPitches(game, c),
+      c => processAtBats(game, c)
     ], function() {
       facade.emit("update", { game, type: "finished-game" });
       callback();

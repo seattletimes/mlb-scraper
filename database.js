@@ -156,7 +156,22 @@ var addPosition = function(game, player, callback) {
   });
 };
 
+var addAtBat = function(game, atBat, callback) {
+  var query = SQL`
+    INSERT INTO at_bats (game, inning, at_bat, event, balls, strikes, outs, batter, pitcher, score)
+      VALUES (${game.id}, ${atBat.inning}, ${atBat.at_bat}, ${atBat.event}, ${atBat.balls}, ${atBat.strikes}, ${atBat.outs}, ${atBat.batter}, ${atBat.pitcher}, ${atBat.score})`;
+  database.query(query, function(err) {
+    if (err) return callback(err);
+    async.each(atBat.runners, function(runner, c) {
+      var query = SQL`
+        INSERT INTO runners (game, inning, at_bat, runner, start_base, end_base, event, score, earned, rbi) VALUES
+        (${game.id}, ${atBat.inning}, ${atBat.at_bat}, ${runner.runner}, ${runner.start_base}, ${runner.end_base}, ${atBat.event}, ${runner.score}, ${runner.earned}, ${runner.rbi})`;
+      database.query(query, c);
+    }, callback)
+  });
+};
+
 
 var close = () => database.end()
 
-module.exports = { addGame, addPlayer, addPosition, addTeam, addPitch, close };
+module.exports = { addGame, addPlayer, addPosition, addTeam, addPitch, addAtBat, close };
